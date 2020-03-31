@@ -1,0 +1,13 @@
+<view class="container" id="contt">
+  recycle-page
+  <recycle-list ref="saveRecycleList" scroll-with-animation="{{true}}" batch="{{batchSetRecycleData}}" batch-key="batchSetRecycleData" scroll-to-index="{{index}}" scroll-top="{{scrollTop}}" height="{{600}}" id="recycleId" onScrollToLower="scrollToLower">
+    <template is="recycleItem" data="{{item: item, recycleList: recycleList}}"></template>
+  </recycle-list>
+</view>
+<template name="recycleItem">
+  <recycle-item style="width:100%;height:160px;" a:for="{{recycleList}}" a:key="{{item.id}}">
+    <view class="recycle-itemsize" style="width:100%;height:160px;position: relative; border-color:red;border-style:solid;border-width:0px;">
+      <text class="recycle-text">{{item.idx+1}}. {{item.title}}</text>
+    </view>
+  </recycle-item>
+</template>

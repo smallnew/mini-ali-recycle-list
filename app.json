@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "pages/recycle-page/recycle-page"
+  ],
+  "window": {
+    "transparentTitle": "always",
+    "titlePenetrate": true,
+    "backgroundImageColor": "#3264C5",
+    "allowsBounceVertical": "NO"
+  }
+}
