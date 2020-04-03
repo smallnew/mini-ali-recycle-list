@@ -6,6 +6,8 @@ const systemInfo = my.getSystemInfoSync()
 const DEBUG = true
 const transformRpx = require('./utils/transformRpx.js').transformRpx
 const throttle = require('./utils/lodash.throttle')
+const debounce = require('./utils/lodash.debounce')
+
 
 Component({
   /**
@@ -121,7 +123,7 @@ Component({
     },
     _scrollViewDidScrollThrottle(e, force) {
       if (!this.onScrollFuncTh) {
-        this.onScrollFuncTh = throttle(this._scrollViewDidScroll, 360, { leading: false, trailing: true });
+        this.onScrollFuncTh = throttle(this._scrollViewDidScroll, 800, { leading: false, trailing: true });
       }
       this.onScrollFuncTh(e, force);
     },
@@ -460,11 +462,10 @@ Component({
       }
         , 0);
     },
-    _recycleInnerBatchDataChanged(cb) {
+    _recycleInnerBatchDataChanged(cb) {//todo wrp batch page setDate and innerBeforeHeight
       if (typeof this._tmpBeforeHeight !== 'undefined') {
         const setObj = {
-          innerBeforeHeight: this._tmpBeforeHeight || 0,
-          innerAfterHeight: this._tmpAfterHeight || 0
+          innerBeforeHeight: this._tmpBeforeHeight || 0
         }
         if (typeof this._tmpInnerScrollTop !== 'undefined') {
           setObj.innerScrollTop = this._tmpInnerScrollTop

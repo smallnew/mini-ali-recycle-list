@@ -6,4 +6,5 @@
 
 .wx-recycle-item {
   height: 100%;
+  display: inline-flex;
 }

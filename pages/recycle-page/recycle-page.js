@@ -37,7 +37,7 @@ Page({
       page: this,
       itemSize: function (item, index) {
         return {
-          width: systemInfo.windowWidth,
+          width: systemInfo.windowWidth * 0.2,
           height: 160
         }
       }
@@ -110,11 +110,6 @@ Page({
   scrollTo0: function () {
     this.setData({
       scrollTop: 0
-    })
-  },
-  newEmptyPage: function () {
-    wx.navigateTo({
-      url: './empty/empty'
     })
   },
   scrollToid: function () {
