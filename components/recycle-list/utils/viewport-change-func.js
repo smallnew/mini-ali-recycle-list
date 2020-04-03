@@ -34,6 +34,7 @@ module.exports = function (e, cb) {
     beforeHeight: pos.minTop,
     afterHeight: pos.afterHeight
   })
+  obj.innerBeforeHeight = pos.minTop;
   this.setData(obj, () => {//todo wrp batch page setDate and innerBeforeHeight
     if (typeof cb === 'function') {
       cb()

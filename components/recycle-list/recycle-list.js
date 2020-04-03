@@ -38,7 +38,7 @@ Component({
    */
   data: {
     width: systemInfo.windowWidth,// '_widthChanged'
-    innerBeforeHeight: 0,
+    //innerBeforeHeight: 0,
     innerAfterHeight: 0,
     innerScrollTop: 0,
     innerScrollIntoView: '',
@@ -457,10 +457,9 @@ Component({
       if (obj.afterHeight) {
         this._tmpAfterHeight = obj.afterHeight
       }
-      setTimeout(_ => {
-        this._recycleInnerBatchDataChanged();
-      }
-        , 0);
+      // setTimeout(_ => {
+      //   this._recycleInnerBatchDataChanged();
+      // }, 0);
     },
     _recycleInnerBatchDataChanged(cb) {//todo wrp batch page setDate and innerBeforeHeight
       if (typeof this._tmpBeforeHeight !== 'undefined') {
