@@ -6,7 +6,6 @@ const systemInfo = my.getSystemInfoSync()
 const DEBUG = true
 const transformRpx = require('./utils/transformRpx.js').transformRpx
 const throttle = require('./utils/lodash.throttle')
-const debounce = require('./utils/lodash.debounce')
 
 
 Component({
@@ -154,7 +153,6 @@ Component({
       const scrollTop = e.detail.scrollTop
       const scrollDistance = Math.abs(scrollTop - this._lastScrollTop)
       if (!force && (Math.abs(scrollTop - pos.top) < pos.height * 1.5)) {
-        //debugger
         this._log('【not exceed height')
         return
       }
@@ -233,30 +231,29 @@ Component({
           endIndex: -1
         }
       }
-      const startLine = Math.floor(minTop / RECT_SIZE)
-      const endLine = Math.ceil(maxTop / RECT_SIZE)
-      const rectEachLine = Math.floor(this.data.width / RECT_SIZE)
-      let beginIndex
-      let endIndex
-      const sizeMap = this.sizeMap
-      for (let i = startLine; i <= endLine; i++) {
-        for (let col = 0; col < rectEachLine; col++) {
-          const key = `${i}.${col}`
-          // 找到sizeMap里面的最小值和最大值即可
-          if (!sizeMap[key]) continue
-          for (let j = 0; j < sizeMap[key].length; j++) {
-            if (typeof beginIndex === 'undefined') {
-              beginIndex = endIndex = sizeMap[key][j]
-              continue
-            }
-            if (beginIndex > sizeMap[key][j]) {
-              beginIndex = sizeMap[key][j]
-            } else if (endIndex < sizeMap[key][j]) {
-              endIndex = sizeMap[key][j]
-            }
-          }
+      const sizeArray = this.sizeArray;
+      if (!sizeArray) {
+        return {
+          beginIndex: -1,
+          endIndex: -1
         }
       }
+      //现在只支持每个item的大小都一样
+      let beginIndex
+      let endIndex
+      const width = this.data.width;//控件的宽度
+      const itemWidth = sizeArray[0].width;
+      const itemHeight = sizeArray[0].height;
+      const itemsEachLine = Math.floor(width / itemWidth);
+      if (width / itemWidth >= 2) {//是个表格
+        beginIndex = Math.floor(minTop / itemHeight) * itemsEachLine
+        endIndex = Math.ceil(maxTop / itemHeight) * itemsEachLine - 1
+      } else {
+        beginIndex = Math.floor(minTop / itemHeight)
+        endIndex = Math.ceil(maxTop / itemHeight)
+      }
+      endIndex = Math.min(sizeArray.length - 1, endIndex);
+      console.log('beginIndex=' + beginIndex + '  endIndex=' + endIndex);
       return {
         beginIndex,
         endIndex

@@ -131,29 +131,10 @@ RecycleContext.prototype._forceRerender = function (id, cb) {
     if (cb) {
       cb()
     }
-    // 计算placeholder, 只有在动态计算高度的时候才支持
-    if (that.autoCalculateSize && that.placeholderClass) {
-      const newQueryClass = []
-      that.placeholderClass.forEach(item => {
-        newQueryClass.push(`.${that.itemSizeOpt.queryClass} .` + item)
-      })
-      // newQueryClass.push(`.` + that.itemSizeOpt.queryClass)
-      // count = newQueryClass.length
-      // my.createSelectorQuery().selectAll(newQueryClass.join(',')).boundingClientRect(rect => {
-      //   if (rect.length < count) return
-      //   allrect = rect
-      //   setPlaceholderImage()
-      // }).exec()
-      // my.createSelectorQuery().select('.' + that.itemSizeOpt.queryClass).boundingClientRect(rect => {
-      //   parentRect = rect
-      //   setPlaceholderImage()
-      // }).exec()
-    }
   }
   if (Object.prototype.toString.call(this.itemSizeOpt) === '[object Object]' &&
     this.itemSizeOpt && !this.itemSizeOpt.width) {
     this._recalculateSizeByProp(recycleData[id].list, function (sizeData) {
-      recycleData[id].sizeMap = sizeData.map
       recycleData[id].sizeArray = sizeData.array
       // 触发强制渲染
       that.comp.forceUpdate(newcb)
@@ -161,9 +142,6 @@ RecycleContext.prototype._forceRerender = function (id, cb) {
     return
   }
   const sizeData = this._recalculateSize(recycleData[id].list)
-  recycleData[id].sizeMap = sizeData.map
-  // console.log('size is', sizeData.array, sizeData.map, 'totalHeight', sizeData.totalHeight)
-  // console.log('sizeArray', sizeData.array)
   recycleData[id].sizeArray = sizeData.array
   // 触发强制渲染
   this.comp.forceUpdate(cb)
@@ -321,7 +299,6 @@ RecycleContext.prototype._recalculateSizeByProp = function (list, cb) {
 RecycleContext.prototype._recalculateSize = function (list) {
   // 遍历所有的数据
   // 应该最多就千量级的, 遍历没有问题
-  const sizeMap = {}
   const func = this.itemSize
   const funcExist = typeof func === 'function'
   const comp = this.comp
@@ -332,7 +309,6 @@ RecycleContext.prototype._recalculateSize = function (list) {
   let column = 0
   const sizeArray = []
   const listLen = list.length
-  // 把整个页面拆分成200*200的很多个方格, 判断每个数据落在哪个方格上
   for (let i = 0; i < listLen; i++) {
     list[i].__index__ = i
     let itemSize = {}
@@ -359,23 +335,6 @@ RecycleContext.prototype._recalculateSize = function (list) {
       } else {
         offsetTop += itemSize.height
       }
-      // offsetTop += sizeArray[sizeArray.length - 2].height // 加上最后一个数据的高度
-      // 根据高度判断是否需要移动到下一个方格
-      if (offsetTop >= RECT_SIZE * (line + 1)) {
-        // fix: 当区块比较大时，会缺失块区域信息
-        const lastIdx = i - 1
-        const lastLine = line
-
-        line += parseInt((offsetTop - RECT_SIZE * line) / RECT_SIZE, 10)
-
-        for (let idx = lastLine; idx < line; idx++) {
-          const key = `${idx}.${column}`
-          if (!sizeMap[key]) {
-            sizeMap[key] = []
-          }
-          sizeMap[key].push(lastIdx)
-        }
-      }
 
       // 新起一行的元素, beforeHeight是前一个元素的beforeHeight和height相加
       if (i === 0) {
@@ -385,9 +344,6 @@ RecycleContext.prototype._recalculateSize = function (list) {
         itemSize.beforeHeight = prevItemSize.beforeHeight + prevItemSize.height
       }
     } else {
-      if (offsetLeft >= RECT_SIZE * (column + 1)) {
-        column++
-      }
       offsetLeft += itemSize.width
       if (i === 0) {
         itemSize.beforeHeight = 0
@@ -396,34 +352,12 @@ RecycleContext.prototype._recalculateSize = function (list) {
         itemSize.beforeHeight = sizeArray[sizeArray.length - 2].beforeHeight
       }
     }
-    const key = `${line}.${column}`
-    if (!sizeMap[key]) {
-      (sizeMap[key] = [])
-    }
-    sizeMap[key].push(i)
-
-    // fix: 当区块比较大时，会缺失块区域信息
-    if (listLen - 1 === i && itemSize.height > RECT_SIZE) {
-      const lastIdx = line
-      offsetTop += itemSize.height
-      line += parseInt((offsetTop - RECT_SIZE * line) / RECT_SIZE, 10)
-      for (let idx = lastIdx; idx <= line; idx++) {
-        const key = `${idx}.${column}`
-        if (!sizeMap[key]) {
-          sizeMap[key] = []
-        }
-        sizeMap[key].push(i)
-      }
-    }
   }
-  // console.log('sizeMap', sizeMap)
   const obj = {
     array: sizeArray,
-    map: sizeMap,
     totalHeight: sizeArray.length ? sizeArray[sizeArray.length - 1].beforeHeight +
       sizeArray[sizeArray.length - 1].height : 0
   }
-  //debugger
   comp.setItemSize(obj)
   return obj
 }

@@ -7,7 +7,7 @@
 <template name="recycleItem">
   <recycle-item style="width:20vw;height:160px;" a:for="{{recycleList}}" a:key="{{item.id}}">
     <view class="recycle-itemsize" style="width:20vw;height:160px;position: relative; border-color:red;border-style:solid;border-width:1px;box-sizing: border-box;">
-      <text class="recycle-text">{{item.idx+1}}. {{item.title}}</text>
+      <text class="recycle-text">{{item.idx}}. {{item.title}}</text>
       <image class='recycle-image' style='width:80px;height:80px;' src="{{item.image_url}}?imageView2/2/w/120/h/0/q/120/format/jpg"></image>
       <image class='recycle-image' style='width:80px;height:80px;' src="{{item.image_url}}?imageView2/2/w/120/h/0/q/120/format/jpg"></image>
       <image class='recycle-image' style='width:80px;height:80px;' src="{{item.image_url}}?imageView2/2/w/120/h/0/q/120/format/jpg"></image>
