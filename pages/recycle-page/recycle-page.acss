@@ -5,5 +5,25 @@
 }
 
 .btn {
-  height: 30px;
+  position: absolute;
+  width: 35vw;
+  top: 27vh;
+  right: 1vh;
+  background-color: #fafafa;
+}
+
+.btn2 {
+  position: absolute;
+  width: 35vw;
+  top: 11vh;
+  right: 1vh;
+  background-color: #fafafa;
+}
+
+.btn3 {
+  position: absolute;
+  width: 35vw;
+  top: 19vh;
+  right: 1vh;
+  background-color: #fafafa;
 }

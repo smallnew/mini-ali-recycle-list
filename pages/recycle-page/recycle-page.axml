@@ -1,16 +1,16 @@
 <view class="container" id="contt">
-  recycle-page
-  <recycle-list ref="saveRecycleList" scroll-with-animation="{{true}}" batch="{{batchSetRecycleData}}" batch-key="batchSetRecycleData" scroll-to-index="{{index}}" scroll-top="{{scrollTop}}" height="{{600}}" id="recycleId" onScrollToLower="scrollToLower" screen="3" innerBeforeHeight="{{innerBeforeHeight||0}}">
+  <recycle-list ref="saveRecycleList" scroll-with-animation="{{false}}" batch="{{batchSetRecycleData}}" batch-key="batchSetRecycleData" scroll-to-index="{{index}}" scroll-top="{{scrollTop}}" height="{{600}}" id="recycleId" onScrollToLower="scrollToLower" screen="3" scroll-to-index="{{index}}" scroll-top="{{scrollTop}}" innerBeforeHeight="{{innerBeforeHeight||0}}">
     <template is="recycleItem" data="{{item: item, recycleList: recycleList}}"></template>
   </recycle-list>
+  <button onTap="scrollToid" class="btn">scrolltoId 110</button>
+  <button onTap="scrollTo1000" class="btn2">scrollto 1000</button>
+  <button onTap="scrollTo0" class="btn3">scrollto 0</button>
 </view>
 <template name="recycleItem">
   <recycle-item style="width:20vw;height:160px;" a:for="{{recycleList}}" a:key="{{item.id}}">
-    <view class="recycle-itemsize" style="width:20vw;height:160px;position: relative; border-color:red;border-style:solid;border-width:1px;box-sizing: border-box;">
+    <view class="recycle-itemsize" style="width:20vw;height:160px;position: relative; border-color:#f7f8f9;border-style:solid;border-width:1px;box-sizing: border-box;">
       <text class="recycle-text">{{item.idx}}. {{item.title}}</text>
-      <image class='recycle-image' style='width:80px;height:80px;' src="{{item.image_url}}?imageView2/2/w/120/h/0/q/120/format/jpg"></image>
-      <image class='recycle-image' style='width:80px;height:80px;' src="{{item.image_url}}?imageView2/2/w/120/h/0/q/120/format/jpg"></image>
-      <image class='recycle-image' style='width:80px;height:80px;' src="{{item.image_url}}?imageView2/2/w/120/h/0/q/120/format/jpg"></image>
+      <image class='recycle-image' style='width:19vw;height:80px;' src="https://y.gtimg.cn/music/photo_new/T002R300x300M000001B3iTE4Y9zix_1.jpg?max_age=2592000"></image>
     </view>
   </recycle-item>
 </template>

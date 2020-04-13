@@ -7,7 +7,6 @@ const DEBUG = true
 const transformRpx = require('./utils/transformRpx.js').transformRpx
 const throttle = require('./utils/lodash.throttle')
 
-
 Component({
   /**
    * 组件的属性列表
@@ -17,14 +16,11 @@ Component({
     scrollY: true,
     batch: false,// '_recycleInnerBatchDataChanged'
     batchKey: 'batchSetRecycleData',
-    scrollTop: 0,// '_scrollTopChanged',
-
     // 距顶部/左边多远时，触发bindscrolltoupper
     upperThreshold: 50,
     // 距底部/右边多远时，触发bindscrolltolower
     lowerThreshold: 50,
     scrollToIndex: 0,// '_scrollToIndexChanged',
-    scrollWithAnimation: true,
     enableBackToTop: false,
     // 是否节流，默认是
     throttle: true,
@@ -142,21 +138,16 @@ Component({
         return
       }
 
-      // 在scrollWithAnimation动画最后会触发一次scroll事件, 这次scroll事件必须要被忽略
-      if (this._isScrollingWithAnimation) {
-        this._isScrollingWithAnimation = false
-        return
-      }
       const pos = this._pos
       const that = this
       const scrollLeft = e.detail.scrollLeft
       const scrollTop = e.detail.scrollTop
       const scrollDistance = Math.abs(scrollTop - this._lastScrollTop)
+      this._lastScrollTop = scrollTop
       if (!force && (Math.abs(scrollTop - pos.top) < pos.height * 1.5)) {
         this._log('【not exceed height')
         return
       }
-      this._lastScrollTop = scrollTop
       const SHOW_SCREENS = this.props.screen // 固定4屏幕
       this._log('SHOW_SCREENS', SHOW_SCREENS, scrollTop)
       this._calcViewportIndexes(scrollLeft, scrollTop,
@@ -195,33 +186,11 @@ Component({
     // 计算在视窗内渲染的数据
     _calcViewportIndexes(left, top, cb) {
       const that = this
-      // const st = +new Date
-      this._getBeforeSlotHeight(() => {
-        const {
-          beginIndex, endIndex, minTop, afterHeight, maxTop
-        } = that.__calcViewportIndexes(left, top)
-        if (cb) {
-          cb(beginIndex, endIndex, minTop, afterHeight, maxTop)
-        }
-      })
-    },
-    _getBeforeSlotHeight(cb) {
-      if (typeof this.data.beforeSlotHeight !== 'undefined') {
-        if (cb) {
-          cb(this.data.beforeSlotHeight)
-        }
-      } else {
-        this.reRender(cb)
-      }
-    },
-    _getAfterSlotHeight(cb) {
-      if (typeof this.data.afterSlotHeight !== 'undefined') {
-        if (cb) {
-          cb(this.data.afterSlotHeight)
-        }
-        // cb && cb(this.data.afterSlotHeight)
-      } else {
-        this.reRender(cb)
+      const {
+        beginIndex, endIndex, minTop, afterHeight, maxTop
+      } = that.__calcViewportIndexes(left, top)
+      if (cb) {
+        cb(beginIndex, endIndex, minTop, afterHeight, maxTop)
       }
     },
     _getIndexes(minTop, maxTop) {
@@ -275,19 +244,17 @@ Component({
       if (typeof top === 'undefined') {
         (top = pos.top)
       }
-      // top = Math.max(top, this.data.beforeSlotHeight)
-      const beforeSlotHeight = /*this.data.beforeSlotHeight ||*/ 0
       // 和direction无关了
       const SHOW_SCREENS = this.props.screen
-      let minTop = top - pos.height * SHOW_SCREENS - beforeSlotHeight
-      let maxTop = top + pos.height * SHOW_SCREENS - beforeSlotHeight
+      let minTop = top - pos.height * SHOW_SCREENS
+      let maxTop = top + pos.height * SHOW_SCREENS
       // maxTop或者是minTop超出了范围
       if (maxTop > this.totalHeight) {
         minTop -= (maxTop - this.totalHeight)
         maxTop = this.totalHeight
       }
-      if (minTop < beforeSlotHeight) {
-        maxTop += Math.min(beforeSlotHeight - minTop, this.totalHeight)
+      if (minTop < 0) {
+        maxTop += Math.min(0 - minTop, this.totalHeight)
         minTop = 0
       }
       // 计算落在minTop和maxTop之间的方格有哪些
@@ -320,6 +287,17 @@ Component({
         afterHeight,
         maxTop,
       }
+    },
+    _setInnerBeforeAndAfterHeight(obj) {
+      if (typeof obj.beforeHeight !== 'undefined') {
+        this._tmpBeforeHeight = obj.beforeHeight
+      }
+      if (obj.afterHeight) {
+        this._tmpAfterHeight = obj.afterHeight
+      }
+      // setTimeout(_ => {
+      //   this._recycleInnerBatchDataChanged();
+      // }, 0);
     },
     setItemSize(size) {
       this.sizeArray = size.array
@@ -399,64 +377,7 @@ Component({
       return newVal
     },
     reRender(cb) {
-      let beforeSlotHeight
-      let afterSlotHeight
-      const that = this
-      // const reRenderStart = Date.now()
-      function newCb() {
-        if (that._lastBeforeSlotHeight !== beforeSlotHeight ||
-          that._lastAfterSlotHeight !== afterSlotHeight) {
-          that.setData({
-            hasBeforeSlotHeight: true,
-            hasAfterSlotHeight: true,
-            beforeSlotHeight,
-            afterSlotHeight
-          })
-        }
-        that._lastBeforeSlotHeight = beforeSlotHeight
-        that._lastAfterSlotHeight = afterSlotHeight
-        // console.log('_getBeforeSlotHeight use time', Date.now() - reRenderStart)
-        if (cb) {
-          cb()
-        }
-      }
-      // 重新渲染事件发生
-      let beforeReady = false
-      let afterReady = false
-      // fix：#16 确保获取slot节点实际高度
-      this.setData({
-        hasBeforeSlotHeight: false,
-        hasAfterSlotHeight: false,
-      }, () => {
-        my.createSelectorQuery().select('.slot-before').boundingClientRect((rect) => {
-          beforeSlotHeight = rect.height
-          beforeReady = true
-          if (afterReady) {
-            if (newCb) { newCb() }
-          }
-        }).exec()
-        my.createSelectorQuery().select('.hf-slot-after').boundingClientRect((rect) => {
-          afterSlotHeight = rect.height
-          afterReady = true
-          if (beforeReady) {
-            if (newCb) { newCb() }
-          }
-        }).exec()
-        afterSlotHeight = 0;
-        beforeSlotHeight = 0;
-        newCb()
-      })
-    },
-    _setInnerBeforeAndAfterHeight(obj) {
-      if (typeof obj.beforeHeight !== 'undefined') {
-        this._tmpBeforeHeight = obj.beforeHeight
-      }
-      if (obj.afterHeight) {
-        this._tmpAfterHeight = obj.afterHeight
-      }
-      // setTimeout(_ => {
-      //   this._recycleInnerBatchDataChanged();
-      // }, 0);
+      cb();
     },
     _recycleInnerBatchDataChanged(cb) {//todo wrp batch page setDate and innerBeforeHeight
       if (typeof this._tmpBeforeHeight !== 'undefined') {
@@ -472,16 +393,12 @@ Component({
           pageObj[this._currentSetDataKey] = this._currentSetDataList
           hasPageData = true
         }
-        const saveScrollWithAnimation = this.data.scrollWithAnimation
         const groupSetData = () => {
           // 如果有分页数据的话
           if (hasPageData) {
             this.page.setData(pageObj)
           }
           this.setData(setObj, () => {
-            // this.setData({//noop
-            //   scrollWithAnimation: saveScrollWithAnimation
-            // })
             if (typeof cb === 'function') {
               cb()
             }
@@ -504,15 +421,11 @@ Component({
           ignoreScroll: true
         }
       }, true)
-      if (this.props.scrollWithAnimation) {
-        this._isScrollingWithAnimation = true
-      }
-      this.setData({
-        innerScrollTop: scrollTop
+      this.setData({//两次设置的scrollTop一样的情况下不会滚动
+        innerScrollTop: this.data.innerScrollTop == scrollTop ? scrollTop + 1 : scrollTop
       })
     },
-    _scrollTopChanged(newVal, oldVal) {
-      // if (newVal === oldVal && newVal === 0) return
+    scrollTo(newVal) {
       if (!this._isInitScrollTop && newVal === 0) {
         this._isInitScrollTop = true
         return newVal
@@ -523,20 +436,19 @@ Component({
           clearTimeout(this._scrollTopTimerId)
         }
         this._scrollTopTimerId = setTimeout(() => {
-          this._scrollTopChanged(newVal, oldVal)
+          this._scrollTopChanged(newVal)
         }, 10)
         return newVal
       }
       this._isInitScrollTop = true
       this._scrollTopTimerId = null
-      // this._lastScrollTop = oldVal
       if (typeof this._lastScrollTop === 'undefined') {
         this._lastScrollTop = this.data.scrollTop
       }
       // 滑动距离小于一个屏幕的高度, 直接setData
       if (Math.abs(newVal - this._lastScrollTop) < this._pos.height) {
-        this.setData({
-          innerScrollTop: newVal
+        this.setData({////两次设置的scrollTop一样的情况下不会滚动，scroll-view滚动的时候不会主动设置innerScrollTop属性
+          innerScrollTop: this.data.innerScrollTop == newVal ? newVal + 1 : newVal
         })
         return newVal
       }
@@ -551,8 +463,7 @@ Component({
       }
       return newVal
     },
-    _scrollToIndexChanged(newVal, oldVal) {
-      // if (newVal === oldVal && newVal === 0) return
+    scrollToIndex(newVal) {
       // 首次滚动到0的不执行
       if (!this._isInitScrollToIndex && newVal === 0) {
         this._isInitScrollToIndex = true
@@ -574,12 +485,11 @@ Component({
       }
       const rect = this.boundingClientRect(newVal)
       if (!rect) return newVal
-      // console.log('rect top', rect, this.data.beforeSlotHeight)
-      const calScrollTop = rect.top + (this.data.beforeSlotHeight || 0)
+      const calScrollTop = rect.top
       this.currentScrollTop = calScrollTop
       if (Math.abs(calScrollTop - this._lastScrollTop) < this._pos.height) {
         this.setData({
-          innerScrollTop: calScrollTop
+          innerScrollTop: this.data.innerScrollTop == calScrollTop ? calScrollTop + 1 : calScrollTop
         })
         return newVal
       }
