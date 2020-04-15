@@ -1,7 +1,7 @@
 {
   "titleBarColor": "#fefefe",
   "usingComponents": {
-    "recycle-list": "/components/recycle-list/recycle-list",
-    "recycle-item": "/components/recycle-list/recycle-item/recycle-item"
+    "recycle-list": "/recycle-list/recycle-list",
+    "recycle-item": "/recycle-list/recycle-item"
   }
 }

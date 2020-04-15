@@ -4,13 +4,13 @@
     <view style="position: absolute;z-index:1;width:100%;left: 0;top: 0;opacity: 0;visibility: hidden;">
       <slot name="itemsize"></slot>
     </view>
-    <view style="height:{{hasBeforeSlotHeight ? beforeSlotHeight + 'px' : 'auto'}}" class="slot-before">
+    <view style="height:{{beforeSlotHeight + 'px'}}" class="slot-before">
       <slot name="before"></slot>
     </view>
-    <view style='position:relative;width:100%;z-index:10;height:{{totalHeight+200}}px;'>
+    <view style='position:relative;width:100%;z-index:10;height:{{totalHeight+beforeSlotHeight+afterSlotHeight}}px;'>
       <view style="position: absolute;left:0;width:100%;top:{{innerBeforeHeight}}px;">
         <slot></slot>
-        <view style="display:block;position:relative;height:200px;background-color:blue;" class="hf-slot-after">
+        <view style="display:block;position:relative;height:{{afterSlotHeight + 'px'}};">
           <slot name="after"></slot>
         </view>
       </view>

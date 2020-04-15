@@ -14,18 +14,16 @@ Component({
   props: {
     debug: false,
     scrollY: true,
-    batch: false,// '_recycleInnerBatchDataChanged'
-    batchKey: 'batchSetRecycleData',
     // 距顶部/左边多远时，触发bindscrolltoupper
     upperThreshold: 50,
     // 距底部/右边多远时，触发bindscrolltolower
     lowerThreshold: 50,
     scrollToIndex: 0,// '_scrollToIndexChanged',
     enableBackToTop: false,
-    // 是否节流，默认是
-    throttle: true,
     placeholderImage: '',
-    screen: DEFAULT_SHOW_SCREENS
+    screen: DEFAULT_SHOW_SCREENS,
+    afterSlotHeight: 0,
+    beforeSlotHeight: 0
   },
 
   /**
@@ -161,7 +159,6 @@ Component({
           }
           // 如果这次渲染的范围比上一次的范围小，则忽略
           that._log('【check】before setData, old pos is', pos.minTop, pos.maxTop, minTop, maxTop)
-          that._throttle = false
           pos.left = scrollLeft
           pos.top = scrollTop
           pos.beginIndex = beginIndex
@@ -244,17 +241,17 @@ Component({
       if (typeof top === 'undefined') {
         (top = pos.top)
       }
-      // 和direction无关了
+      const beforeSlotHeight = Number(this.props.beforeSlotHeight)
       const SHOW_SCREENS = this.props.screen
-      let minTop = top - pos.height * SHOW_SCREENS
-      let maxTop = top + pos.height * SHOW_SCREENS
+      let minTop = top - pos.height * SHOW_SCREENS - beforeSlotHeight
+      let maxTop = top + pos.height * SHOW_SCREENS - beforeSlotHeight
       // maxTop或者是minTop超出了范围
       if (maxTop > this.totalHeight) {
         minTop -= (maxTop - this.totalHeight)
         maxTop = this.totalHeight
       }
-      if (minTop < 0) {
-        maxTop += Math.min(0 - minTop, this.totalHeight)
+      if (minTop < beforeSlotHeight) {
+        maxTop += Math.min(beforeSlotHeight - minTop, this.totalHeight)
         minTop = 0
       }
       // 计算落在minTop和maxTop之间的方格有哪些
@@ -295,9 +292,6 @@ Component({
       if (obj.afterHeight) {
         this._tmpAfterHeight = obj.afterHeight
       }
-      // setTimeout(_ => {
-      //   this._recycleInnerBatchDataChanged();
-      // }, 0);
     },
     setItemSize(size) {
       this.sizeArray = size.array
@@ -379,7 +373,7 @@ Component({
     reRender(cb) {
       cb();
     },
-    _recycleInnerBatchDataChanged(cb) {//todo wrp batch page setDate and innerBeforeHeight
+    _recycleInnerBatchDataChanged(cb) {//batch page setDate and innerBeforeHeight
       if (typeof this._tmpBeforeHeight !== 'undefined') {
         const setObj = {
           innerBeforeHeight: this._tmpBeforeHeight || 0
@@ -485,7 +479,7 @@ Component({
       }
       const rect = this.boundingClientRect(newVal)
       if (!rect) return newVal
-      const calScrollTop = rect.top
+      const calScrollTop = rect.top + Number(this.props.beforeSlotHeight)
       this.currentScrollTop = calScrollTop
       if (Math.abs(calScrollTop - this._lastScrollTop) < this._pos.height) {
         this.setData({

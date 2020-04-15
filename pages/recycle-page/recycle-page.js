@@ -1,7 +1,7 @@
 let j = 0
 const systemInfo = my.getSystemInfoSync()
 
-const createRecycleContext = require('../../components/recycle-list/index')
+const createRecycleContext = require('/recycle-list/index')
 Page({
   data: {},
   onLoad() {
@@ -44,10 +44,8 @@ Page({
   showView: function () {
     const ctx = this.ctx
     const newList = this.genData()
-
     console.log('len', newList.length)
     const st = Date.now()
-
     ctx.splice(newList, () => {
       console.log('【render】showList use time', Date.now() - st)
     })

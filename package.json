@@ -1,0 +1,25 @@
+{
+  "name": "mini-ali-recycle-list",
+  "version": "1.0.0",
+  "description": "ali mini app virtuallist",
+  "files": [
+    "recycle-list"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smallnew/mini-ali-recycle-list.git"
+  },
+  "keywords": [
+    "mini-app",
+    "virtuallist"
+  ],
+  "author": "smallnew",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smallnew/mini-ali-recycle-list/issues"
+  },
+  "homepage": "https://github.com/smallnew/mini-ali-recycle-list#readme"
+}
