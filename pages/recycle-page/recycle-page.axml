@@ -1,5 +1,5 @@
 <view class="container" id="contt">
-  <recycle-list ref="saveRecycleList" scroll-with-animation="{{false}}" batch="{{batchSetRecycleData}}" batch-key="batchSetRecycleData" scroll-to-index="{{index}}" scroll-top="{{scrollTop}}" height="{{600}}" id="recycleId" onScrollToLower="scrollToLower" screen="3" scroll-to-index="{{index}}" scroll-top="{{scrollTop}}" innerBeforeHeight="{{innerBeforeHeight||0}}" beforeSlotHeight="100">
+  <recycle-list ref="saveRecycleList" scroll-with-animation="{{false}}" scroll-to-index="{{index}}" height="{{600}}" id="recycleId" onScrollToLower="scrollToLower" innerBeforeHeight="{{innerBeforeHeight||0}}" beforeSlotHeight="100">
     <image slot="before" style='height:100px;width:100vw;' mode="aspectFill" src="https://y.gtimg.cn/music/photo_new/T002R300x300M000001TLG053apS5S_1.jpg?max_age=2592000">
     </image>
     <template is="recycleItem" data="{{item: item, recycleList: recycleList}}"></template>

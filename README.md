@@ -8,13 +8,13 @@
 
 ## 背景
 
-​ 电商小程序往往需要展示很多商品，当一个页面展示很多的商品信息的时候，会造成小程序页面的卡顿以及白屏。原因有如下几点：
+​ 支付宝小程序有的情况下一个列表会包含非常多元素，当一个页面展示很多的UI元素的时候，会造成小程序页面的卡顿以及白屏。原因有如下几点：
 
-1. 商品列表数据很大，首次 setData 的时候耗时高
-2. 渲染出来的商品列表 DOM 结构多，每次 setData 都需要创建新的虚拟树、和旧树 diff 操作耗时都比较高
-3. 渲染出来的商品列表 DOM 结构多，占用的内存高，造成页面被系统回收的概率变大。
+1. 列表数据很大，首次 setData 的时候耗时高
+2. 渲染出来的列表 DOM 结构多，每次 setData 都需要创建新的虚拟树、和旧树 diff 操作耗时都比较高
+3. 渲染出来的列表 DOM 结构多，占用的内存高，造成页面被系统回收的概率变大。
 
-因此实现长列表组件来解决这些问题。
+而支付宝小程序没有相关的virtuallist，因此按照微信recycle-view实现长列表组件来解决这些问题。
 
 ## 实现思路
 
@@ -39,7 +39,7 @@
 
 | 目录/文件          | 描述                     |
 | ----------------- | ------------------------ |
-| recycle-view 组件 | 长列表组件                |
+| recycle-list 组件 | 长列表组件                |
 | recycle-item 组件 | 长列表每一项 item 组件     |
 | index.js          | 提供操作长列表数据的API    |
 
@@ -51,30 +51,32 @@
 npm install --save mini-ali-recycle-list
 ```
 
-2. 在页面的 json 配置文件中添加 recycle-view 和 recycle-item 自定义组件的配置
+2. 在页面的 json 配置文件中添加 recycle-list 和 recycle-item 自定义组件的配置
 
    ```json
-   {
-     "usingComponents": {
-       "recycle-view": "miniprogram-recycle-view/recycle-view",
-       "recycle-item": "miniprogram-recycle-view/recycle-item"
-     }
-   }
+{
+  "usingComponents": {
+    "recycle-list": "mini-ali-recycle-list/recycle-list/recycle-list",
+    "recycle-item": "mini-ali-recycle-list/recycle-list/recycle-item/recycle-item"
+  }
+}
    ```
 
 3. WXML 文件中引用 recycle-view
 
    ```xml
-   <recycle-view batch="{{batchSetRecycleData}}" id="recycleId">
-     <view slot="before">长列表前面的内容</view>
-     <recycle-item wx:for="{{recycleList}}" wx:key="id">
-       <view>
-           <image style='width:80px;height:80px;float:left;' src="{{item.image_url}}"></image>
-         {{item.idx+1}}. {{item.title}}
-       </view>
-     </recycle-item>
-     <view slot="after">长列表后面的内容</view>
-   </recycle-view>
+
+  <recycle-list ref="saveRecycleList" scroll-with-animation="{{false}}" height="{{600}}" id="recycleId" onScrollToLower="scrollToLower" innerBeforeHeight="{{innerBeforeHeight||0}}" beforeSlotHeight="100">
+    <image slot="before" style='height:100px;width:100vw;' mode="aspectFill" src="https://y.gtimg.cn/music/photo_new/T002R300x300M000001TLG053apS5S_1.jpg?max_age=2592000">
+    </image>
+    <recycle-item style="width:20vw;height:160px;" a:for="{{recycleList}}" a:key="{{item.id}}">
+      <view class="recycle-itemsize" style="width:20vw;height:160px;position: relative; border-color:#f7f8f9;border-style:solid;border-width:1px;box-sizing: border-box;">
+        <text class="recycle-text">{{item.idx}}. {{item.title}}</text>
+        <image class='recycle-image' style='width:19vw;height:80px;' src="https://y.gtimg.cn/music/photo_new/T002R300x300M000001B3iTE4Y9zix_1.jpg?max_age=2592000"></image>
+      </view>
+    </recycle-item>
+  </recycle-list>
+
    ```
 
    **recycle-view 的属性介绍如下：**
@@ -82,8 +84,11 @@ npm install --save mini-ali-recycle-list
    | 字段名                | 类型    | 必填 | 描述                                      |
    | --------------------- | ------- | ---- | ----------------------------------------- |
    | id                    | String  | 是   | id必须是页面唯一的字符串                  |
-   | height                | Number  | 否   | 设置recycle-view的高度，默认为页面高度    |
-   | width                 | Number  | 否   | 设置recycle-view的宽度，默认是页面的宽度  |
+   | height                | Number  | 否   | 设置recycle-list的高度，默认为页面高度    |
+   | width                 | Number  | 否   | 设置recycle-list的宽度，默认是页面的宽度  |
+   | innerBeforeHeight     | Number  | 是   | 内部计算位置使用，固定为innerBeforeHeight||0  |
+   | ref                   | func    | 是   | 内部需要的应用，固定为(ref)=>this.recyleRef = ref;  |
+   | beforeSlotHeight      | Number  | 否   | 列表头高度，有列表头时必填   |
    | enable-back-to-top    | Boolean | 否   | 默认为false，同scroll-view同名字段        |
    | scroll-top            | Number  | 否   | 默认为false，同scroll-view同名字段        |
    | scroll-y              | Number  | 否   | 默认为true，同scroll-view同名字段        |
@@ -96,7 +101,7 @@ npm install --save mini-ali-recycle-list
    | bindscrolltolower     | 事件    | 否   | 同scroll-view同名字段                     |
    | bindscrolltoupper     | 事件    | 否   | 同scroll-view同名字段                     |
 
-   **recycle-view 包含3个 slot，具体介绍如下：**
+   **recycle-list 包含3个 slot，具体介绍如下：**
 
    | 名称      | 描述                                                      |
    | --------- | --------------------------------------------------------- |
@@ -104,56 +109,50 @@ npm install --save mini-ali-recycle-list
    | 默认 slot | 长列表的列表展示区域，recycle-item 必须定义在默认 slot 中 |
    | after     | 默认 slot 的后面的非回收区域                              |
 
-   ​  长列表的内容实际是在一个 scroll-view 滚动区域里面的，当长列表里面的内容，不止是单独的一个列表的时候，例如我们页面底部都会有一个 copyright 的声明，我们就可以把这部分的内容放在 before 和 after 这2个 slot 里面。
+   ​ 
 
    **recycle-item 的介绍如下：**
 
-   ​  需要注意的是，recycle-item 中必须定义 wx:for 列表循环，不应该通过 setData 来设置 a:for 绑定的变量，而是通过`createRecycleContext`方法创建`RecycleContext`对象来管理数据，`createRecycleContext`在 index.js 文件里面定义。建议同时设置 wx:key，以提升列表的渲染性能。
+   ​  需要注意的是，recycle-item 中必须定义 a:for 列表循环，不应该通过 setData 来设置 a:for 绑定的变量，而是通过`createRecycleContext`方法创建`RecycleContext`对象来管理数据，`createRecycleContext`在 index.js 文件里面定义。建议同时设置 a:key，以提升列表的渲染性能。
 
 4. 页面 JS 管理 recycle-view 的数据
 
    ```javascript
-   const createRecycleContext = require('miniprogram-recycle-view')
-   Page({
-       onReady: function() {
-           var ctx = createRecycleContext({
-             id: 'recycleId',
-             dataKey: 'recycleList',
-             page: this,
-             itemSize: { // 这个参数也可以直接传下面定义的this.itemSizeFunc函数
-               width: 162,
-               height: 182
-             }
-           })
-           ctx.append(newList)
-           // ctx.update(beginIndex, list)
-           // ctx.destroy()
-       },
-       itemSizeFunc: function (item, idx) {
-           return {
-               width: 162,
-               height: 182
-           }
-       }
-   })
+   const createRecycleContext = require('mini-ali-recycle-list/recycle-list/index')
+   .....
+    onLoad() {
+    var ctx = createRecycleContext({
+      id: 'recycleId',
+      dataKey: 'recycleList',
+      page: this,
+      itemSize: function (item, index) {
+        return {
+          width: systemInfo.windowWidth * 0.2,
+          height: 160
+        }
+      }
+    })
+    this.ctx = ctx;
+  },
+
+itemSize为必填项，必须预先知道item的宽高，现在只支持所有item一样宽高
+
    ```
 
    `typescript`支持,使用如下方式引入
    ```typescript
-   import * as createRecycleContext from 'miniprogram-recycle-view';
+   const createRecycleContext = require('mini-ali-recycle-list/recycle-list/index')
    ```
 
-   ​  页面必须通过 Component 构造器定义，页面引入了`miniprogram-recycle-view`包之后，会在 wx 对象下面新增接口`createRecycleContext`函数创建`RecycleContext`对象来管理 recycle-view 定义的的数据，`createRecycleContext`接收类型为1个 Object 的参数，Object 参数的每一个 key 的介绍如下：
+   ​  页面必须通过 Component 构造器定义，页面引入了`mini-ali-recycle-list`包之后，`createRecycleContext`接收类型为1个 Object 的参数，Object 参数的每一个 key 的介绍如下：
 
    | 参数名    | 类型            | 描述                                                             |
    | -------- | --------------- | --------------------------------------------------------------- |
-   | id       | String          | 对应 recycle-view 的 id 属性的值                                  |
-   | dataKey  | String          | 对应 recycle-item 的 wx:for 属性设置的绑定变量名                   |
+   | id       | String          | 对应 recycle-list 的 id 属性的值                                  |
+   | dataKey  | String          | 对应 recycle-item 的 a:for 属性设置的绑定变量名                   |
    | page     | Page/Component  | recycle-view 所在的页面或者组件的实例，页面或者组件内可以直接传 this |
    | itemSize | Object/Function | 此参数用来生成recycle-item的宽和高，前面提到过，要知道当前需要渲染哪些item，必须知道item的宽高才能进行计算<br />Object必须包含{width, height}两个属性，Function的话接收item, index这2个参数，返回一个包含{width, height}的Object<br />itemSize如果是函数，函数里面`this`指向RecycleContext<br />如果样式使用了rpx，可以通过transformRpx来转化为px。<br />为Object类型的时候，还有另外一种用法，详细情况见下面的itemSize章节的介绍。 |
-   | useInPage | Boolean | 是否整个页面只有recycle-view。Page的定义里面必须至少加空的onPageScroll函数，主要是用在页面级别的长列表，并且需要用到onPullDownRefresh的效果。切必须设置`root`参数为当前页面对象 |
-   | root | Page | 当前页面对象，可以通过getCurrentPages获取, 当useInPage为true必须提供 |
-
+   
    RecycleContext 对象提供的方法有：
 
    | 方法                  | 参数                         | 说明                                                         |
@@ -177,20 +176,25 @@ npm install --save mini-ali-recycle-list
    function(item, index) {
        return {
            width: 195,
-           height: item.azFirst ? 130 : 120
+           height:  130 
        }
    }
    ```
 
-   
+   ## Important Tips
+
+   1.在列表性能出现问题的时候使用该组件，如果列表本身数据不多无需使用该组件优化  
+   2.该列表阉割了微信recycle-view一些功能，只保留了基础的功能     
+   3.innerBeforeHeight、ref属性是必须且固定的，因为微信recycle-view使用了微信小程序内部的batch更新数据的功能而支付宝没有提供该功能，只能添加属性来达到一样的效果       
+   4.现在只支持item固定宽高  
+   5.快速滑动可能会出现白屏，因为是根据滑动的位置实时更新需要展示的数据需要时间，可以设置screen属性来增加预先加载的数据，默认为4      
 
    ## Tips
 
-   2. recycle-item的宽高必须和itemSize设置的宽高一致，否则会出现跳动的bug。
-   3. recycle-view设置的高度必须和其style里面设置的样式一致。
-   4. `createRecycleContext(options)`的id参数必须和recycle-view的id属性一致，dataKey参数必须和recycle-item的wx:for绑定的变量名一致。
-   5. 不能在recycle-item里面使用wx:for的index变量作为索引值的，请使用{{item.\_\_index\_\_}}替代。
-   6. 不要通过setData设置recycle-item的wx:for的变量值，建议recycle-item设置wx:key属性。
-   7. 如果长列表里面包含图片，必须保证图片资源是有HTTP缓存的，否则在滚动过程中会发起很多的图片请求。
-   9. 当使用了useInPage参数的时候，必须在Page里面定义onPageScroll事件。
-  10. transformRpx会进行四舍五入，所以`transformRpx(20) + transformRpx(90)`不一定等于`transformRpx(110)`
+   1. recycle-item的宽高必须和itemSize设置的宽高一致，否则会出现跳动的bug。
+   2. recycle-list设置的高度必须和其style里面设置的样式一致。
+   3. `createRecycleContext(options)`的id参数必须和recycle-list的id属性一致，dataKey参数必须和recycle-item的a:for绑定的变量名一致。
+   4. 不能在recycle-item里面使用wx:for的index变量作为索引值的，请使用{{item.\_\_index\_\_}}替代。
+   5. 不要通过setData设置recycle-item的a:for的变量值，建议recycle-item设置wx:key属性。
+   6. 如果长列表里面包含图片，必须保证图片资源是有HTTP缓存的，否则在滚动过程中会发起很多的图片请求。
+   7. transformRpx会进行四舍五入，所以`transformRpx(20) + transformRpx(90)`不一定等于`transformRpx(110)`
