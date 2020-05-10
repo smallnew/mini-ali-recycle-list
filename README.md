@@ -138,11 +138,10 @@ npm install --save mini-ali-recycle-list
 itemSize为必填项，必须预先知道item的宽高，现在只支持所有item一样宽高
 
    ```
-
-   `typescript`支持,使用如下方式引入
-   ```typescript
+   使用如下方式引入
    const createRecycleContext = require('mini-ali-recycle-list/recycle-list/index')
    ```
+
 
    ​  页面必须通过 Component 构造器定义，页面引入了`mini-ali-recycle-list`包之后，`createRecycleContext`接收类型为1个 Object 的参数，Object 参数的每一个 key 的介绍如下：
 
