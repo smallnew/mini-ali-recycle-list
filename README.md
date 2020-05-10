@@ -167,6 +167,7 @@ itemSize为必填项，必须预先知道item的宽高，现在只支持所有it
    | getViewportItems      | inViewportPx                 | 获取在视窗内的数据项，用于判断某个项是否出现在视窗内。用于曝光数据上报，菜品和类别的联动效果实现。参数inViewportPx表示距离屏幕多少像素为出现在屏幕内，可以为负值。 |
     | getList      |       无          | 获取到完整的数据列表 |
 
+
    ## itemSize使用
 
    itemSize可以为包含{width, height}的Object，所有数据只有一种宽高信息。如果有多种，则可以提供一个函数，长列表组件会调用这个函数生成每条数据的宽高信息，如下所示：
